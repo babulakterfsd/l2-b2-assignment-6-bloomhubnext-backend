@@ -1,7 +1,11 @@
 import express from 'express';
 import validateRequest from '../../middlewares/validateRequest';
 import { ShopkeeperControllers } from './auth.controller';
-import { loginSchema, signupSchema } from './auth.validation';
+import {
+  loginSchema,
+  signupSchema,
+  updateProfileSchema,
+} from './auth.validation';
 
 const router = express.Router();
 
@@ -23,5 +27,13 @@ router.post(
   '/refresh-token',
   ShopkeeperControllers.getAccessTokenUsingRefreshToken,
 );
+
+router.put(
+  '/update-profile',
+  validateRequest(updateProfileSchema),
+  ShopkeeperControllers.updateShopkeeperProfile,
+);
+
+router.get('/get-profile', ShopkeeperControllers.getShopkeeperProfile);
 
 export const AuthRoutes = router;

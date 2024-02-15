@@ -48,3 +48,18 @@ export const loginSchema = z.object({
     required_error: ' is required',
   }),
 });
+
+export const updateProfileSchema = z.object({
+  profileImage: z
+    .string({
+      invalid_type_error: ' must be string',
+      required_error: ' is required',
+    })
+    .optional(),
+  bhp: z
+    .string({
+      invalid_type_error: ' must be string',
+      required_error: ' is required',
+    })
+    .optional(),
+});

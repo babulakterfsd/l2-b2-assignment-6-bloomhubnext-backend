@@ -51,6 +51,14 @@ const shopkeeperSchema = new Schema<TShopkeeper, TShopkeeperModel>(
           `${props.value} is not a valid role. It should be manager, seller or customer`,
       },
     },
+    bhp: {
+      type: String,
+      default: '0',
+    },
+    profileImage: {
+      type: String,
+      default: '',
+    },
   },
   {
     toJSON: {

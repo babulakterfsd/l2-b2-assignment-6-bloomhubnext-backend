@@ -6,7 +6,11 @@ import jwt, { JsonWebTokenError, JwtPayload } from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import config from '../../config';
 import AppError from '../../errors/AppError';
-import { TShopkeeper } from './auth.interface';
+import {
+  TDecodedShopkeeper,
+  TShopkeeper,
+  TShopkeeperProfileDataToBeUpdated,
+} from './auth.interface';
 import { ShopkeeperModel } from './auth.model';
 
 //create shopkeeper in DB
@@ -155,9 +159,76 @@ const getAccessTokenByRefreshToken = async (token: string) => {
   };
 };
 
+// get shopkeeper by email
+const getShopkeeperFromDbByEmail = async (email: string) => {
+  if (!email) {
+    throw new Error('Email is required');
+  } else {
+    const shopkeeperFromDB = await ShopkeeperModel.findOne({
+      email,
+    });
+    const modifiedShopkeeper = {
+      _id: shopkeeperFromDB?._id,
+      name: shopkeeperFromDB?.name,
+      email: shopkeeperFromDB?.email,
+      role: shopkeeperFromDB?.role,
+      profileImage: shopkeeperFromDB?.profileImage,
+      bhp: shopkeeperFromDB?.bhp,
+    };
+
+    return modifiedShopkeeper;
+  }
+};
+
+//update shopkeeper profile
+const updateShopkeeperProfileInDB = async (
+  shopkeeper: TDecodedShopkeeper,
+  dataToBeUpdated: TShopkeeperProfileDataToBeUpdated,
+) => {
+  const shopkeeperFromDB = await ShopkeeperModel.findOne({
+    email: shopkeeper?.email,
+  });
+
+  if (!shopkeeperFromDB) {
+    throw new JsonWebTokenError('Unauthorized Access!');
+  }
+
+  const { bhp, profileImage } = dataToBeUpdated;
+
+  const result = await ShopkeeperModel.findOneAndUpdate(
+    { email: shopkeeperFromDB?.email },
+    {
+      bhp: bhp ? bhp : shopkeeperFromDB?.bhp,
+      profileImage: profileImage
+        ? profileImage
+        : shopkeeperFromDB?.profileImage,
+    },
+    {
+      new: true,
+    },
+  );
+
+  if (!result) {
+    throw new Error('Update failed');
+  }
+
+  const modifiedResult = {
+    _id: result?._id,
+    name: result?.name,
+    email: result?.email,
+    role: result?.role,
+    bhp: result?.bhp,
+    profileImage: result?.profileImage,
+  };
+
+  return modifiedResult;
+};
+
 export const ShopkeeperServices = {
   registerShopkeeperInDB,
   loginShopkeeperInDB,
   verifyToken,
   getAccessTokenByRefreshToken,
+  getShopkeeperFromDbByEmail,
+  updateShopkeeperProfileInDB,
 };

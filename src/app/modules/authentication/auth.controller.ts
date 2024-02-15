@@ -1,7 +1,9 @@
 import httpStatus from 'http-status';
+import jwt from 'jsonwebtoken';
 import config from '../../config';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
+import { TDecodedShopkeeper } from './auth.interface';
 import { ShopkeeperServices } from './auth.service';
 
 //create shopkeeper
@@ -68,9 +70,57 @@ const getAccessTokenUsingRefreshToken = catchAsync(async (req, res) => {
   });
 });
 
+// get shopkeeper profile
+const getShopkeeperProfile = catchAsync(async (req, res) => {
+  const token = req?.headers?.authorization;
+  const splittedToken = token?.split(' ')[1] as string;
+
+  const decodedShopkeeper = jwt.verify(
+    splittedToken,
+    config.jwt_access_secret as string,
+  );
+
+  const { email } = decodedShopkeeper as TDecodedShopkeeper;
+
+  const result = await ShopkeeperServices.getShopkeeperFromDbByEmail(email);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Profile has been retrieved succesfully',
+    data: result,
+  });
+});
+
+// update shopkeeper profile
+const updateShopkeeperProfile = catchAsync(async (req, res) => {
+  const dataToBeUpdated = req.body;
+  const token = req?.headers?.authorization;
+  const splittedToken = token?.split(' ')[1] as string;
+
+  const decodedShopkeeper = jwt.verify(
+    splittedToken,
+    config.jwt_access_secret as string,
+  );
+
+  const result = await ShopkeeperServices.updateShopkeeperProfileInDB(
+    decodedShopkeeper as TDecodedShopkeeper,
+    dataToBeUpdated,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Profile has been updated succesfully',
+    data: result,
+  });
+});
+
 export const ShopkeeperControllers = {
   registerShopkeeper,
   loginShopkeeper,
   verifyToken,
   getAccessTokenUsingRefreshToken,
+  getShopkeeperProfile,
+  updateShopkeeperProfile,
 };
