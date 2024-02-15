@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { AuthRoutes } from '../modules/authentication/auth.route';
+import { CouponRoutes } from '../modules/coupon/coupon.route';
 import { ProductRoutes } from '../modules/product/product.route';
 import { SellsRoutes } from '../modules/sell/sell.route';
 
@@ -18,6 +19,10 @@ const moduleRoutes = [
   {
     path: '/sells',
     route: SellsRoutes,
+  },
+  {
+    path: '/coupons',
+    route: CouponRoutes,
   },
 ];
 
