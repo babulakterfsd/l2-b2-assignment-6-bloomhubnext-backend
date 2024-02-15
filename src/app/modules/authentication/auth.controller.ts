@@ -11,7 +11,7 @@ const registerShopkeeper = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
-    message: 'Shopkeeper has been registered succesfully',
+    message: 'Registration completed successfully!',
     data: result,
   });
 });
@@ -29,7 +29,7 @@ const loginShopkeeper = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Shopkeeper has been logged in succesfully',
+    message: 'Logged in successfully!',
     data: {
       shopkeeper: {
         _id: shopkeeperFromDB?._id,

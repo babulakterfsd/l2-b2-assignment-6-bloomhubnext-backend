@@ -38,12 +38,18 @@ const shopkeeperSchema = new Schema<TShopkeeper, TShopkeeperModel>(
     },
     role: {
       type: String,
-      enum: {
-        values: ['shopkeeper'],
-        message:
-          '{VALUE} is not a valid role. Only "shopkeeper" is allowed as role',
+      required: [true, 'Role is required'],
+      enum: ['manager', 'seller', 'customer'],
+
+      validate: {
+        validator: (value: string) => {
+          return (
+            value === 'manager' || value === 'seller' || value === 'customer'
+          );
+        },
+        message: (props) =>
+          `${props.value} is not a valid role. It should be manager, seller or customer`,
       },
-      default: 'shopkeeper',
     },
   },
   {

@@ -15,9 +15,7 @@ const registerShopkeeperInDB = async (shopkeeper: TShopkeeper) => {
     await ShopkeeperModel.isShopkeeperExistsWithEmail(shopkeeper?.email);
 
   if (isShopkeeperExistsWithEmail) {
-    throw new Error(
-      'Shopkeeper with this email already exists, please try with different  email.',
-    );
+    throw new Error('Email already exists, please try with different  email.');
   } else {
     const session = await mongoose.startSession();
 
@@ -33,7 +31,7 @@ const registerShopkeeperInDB = async (shopkeeper: TShopkeeper) => {
       await session.endSession();
 
       if (newShopkeeper.length < 1) {
-        throw new Error('Shopkeeper registration failed');
+        throw new Error('Registration failed !');
       }
 
       return newShopkeeper[0];
@@ -51,7 +49,7 @@ const loginShopkeeperInDB = async (shopkeeper: TShopkeeper) => {
     shopkeeper?.email,
   );
   if (!shopkeeperFromDB) {
-    throw new Error('No shopkeeper found with this email');
+    throw new Error('No user found with this email');
   }
   const isPasswordMatched = await bcrypt.compare(
     shopkeeper?.password,

@@ -6,28 +6,28 @@ import { productSchema, productUpdateSchema } from './product.validation';
 
 const router = express.Router();
 
-router.get('/:id', auth('shopkeeper'), ProductControllers.getSingleProduct);
+router.get(
+  '/:id',
+  auth('manager', 'seller'),
+  ProductControllers.getSingleProduct,
+);
 router.put(
   '/:id',
-  auth('shopkeeper'),
+  auth('manager'),
   validateRequest(productUpdateSchema),
   ProductControllers.updateAProduct,
 );
-router.delete('/:id', auth('shopkeeper'), ProductControllers.deleteAProduct);
+router.delete('/:id', auth('manager'), ProductControllers.deleteAProduct);
 
 router.post(
   '/',
-  auth('shopkeeper'),
+  auth('manager'),
   validateRequest(productSchema),
   ProductControllers.createProduct,
 );
 
-router.get('/', auth('shopkeeper'), ProductControllers.getAllProducts);
+router.get('/', auth('manager', 'seller'), ProductControllers.getAllProducts);
 
-router.delete(
-  '/',
-  auth('shopkeeper'),
-  ProductControllers.deleteMultipleProducts,
-);
+router.delete('/', auth('manager'), ProductControllers.deleteMultipleProducts);
 
 export const ProductRoutes = router;

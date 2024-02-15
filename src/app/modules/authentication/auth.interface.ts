@@ -6,16 +6,16 @@ export type TShopkeeper = {
   name: string;
   email: string;
   password: string;
-  role: 'shopkeeper';
+  role: 'manager' | 'seller' | 'customer';
 };
 
-export type TShopkeeperRole = 'shopkeeper';
+export type TShopkeeperRole = 'manager' | 'seller' | 'customer';
 
 export type TDecodedShopkeeper = {
   _id: string;
   name: string;
   email: string;
-  role: 'shopkeeper';
+  role: TShopkeeperRole;
 };
 
 //for creating statics

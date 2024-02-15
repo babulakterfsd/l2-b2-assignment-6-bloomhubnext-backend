@@ -8,11 +8,11 @@ const router = express.Router();
 
 router.post(
   '/',
-  auth('shopkeeper'),
+  auth('seller'),
   validateRequest(sellSchema),
   SellControllers.createSell,
 );
 
-router.get('/', auth('shopkeeper'), SellControllers.getAllSells);
+router.get('/', auth('manager', 'seller'), SellControllers.getAllSells);
 
 export const SellsRoutes = router;
