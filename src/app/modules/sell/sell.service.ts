@@ -19,17 +19,6 @@ const createSellInDB = async (sellsInfo: TSell) => {
     );
   }
 
-  const customer = await ShopkeeperModel.findOne({
-    email: sellsInfo?.customerEmail,
-  });
-
-  if (!customer) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'Customer not found with the given email',
-    );
-  }
-
   const productToBeSold = await ProductModel.findById({
     _id: sellsInfo.productID,
   });
@@ -50,64 +39,132 @@ const createSellInDB = async (sellsInfo: TSell) => {
     );
   }
 
-  let result;
-  const session = await mongoose.startSession();
+  const customer = await ShopkeeperModel.findOne({
+    email: sellsInfo?.customerEmail,
+  });
 
-  try {
-    session.startTransaction();
+  if (customer) {
+    // this block will execute if customer is already registered
+    let result;
+    const session = await mongoose.startSession();
 
-    // transaction - 1 -> create sell
-    result = await SellModel.create([sellsInfo], { session });
+    try {
+      session.startTransaction();
 
-    // transaction - 2 -> reduce quantity in product collection
-    const reduceQuantityInProductCollection =
-      await ProductModel.findByIdAndUpdate(
-        { _id: sellsInfo.productID },
-        { $inc: { quantity: -sellsInfo.quantityToBeSold } },
-        { session, new: true },
-      );
+      // transaction - 1 -> create sell
+      result = await SellModel.create([sellsInfo], { session });
 
-    if (!reduceQuantityInProductCollection) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to sell the product ');
-    }
+      // transaction - 2 -> reduce quantity in product collection
+      const reduceQuantityInProductCollection =
+        await ProductModel.findByIdAndUpdate(
+          { _id: sellsInfo.productID },
+          { $inc: { quantity: -sellsInfo.quantityToBeSold } },
+          { session, new: true },
+        );
 
-    //transaction - 3 -> update customers bhp in shopkeeper collection
-    const customerInDb = await ShopkeeperModel.findOne({
-      email: sellsInfo.customerEmail,
-    });
-    if (!customerInDb) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'Customer not found');
-    } else {
-      const totalBhpEarned = (sellsInfo?.totalBill * 0.1).toFixed(2);
-      const existingBhpOfCustomer = customerInDb?.bhp;
-      const bhPToBeUpdated = (
-        Number(existingBhpOfCustomer) + Number(totalBhpEarned)
-      ).toFixed(2);
-      const updateCustomerBhp = await ShopkeeperModel.findOneAndUpdate(
-        { email: sellsInfo?.customerEmail },
-        { bhp: bhPToBeUpdated },
-        { session, new: true },
-      );
-      if (!updateCustomerBhp) {
+      if (!reduceQuantityInProductCollection) {
         throw new AppError(
           httpStatus.BAD_REQUEST,
-          'Failed to update customer bhp',
+          'Failed to sell the product ',
         );
       }
+
+      //transaction - 3 -> update customers bhp in shopkeeper collection
+      const customerInDb = await ShopkeeperModel.findOne({
+        email: sellsInfo.customerEmail,
+      });
+      if (!customerInDb) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'Customer not found');
+      } else {
+        const totalBhpEarned = (sellsInfo?.totalBill * 0.1).toFixed(2);
+        const existingBhpOfCustomer = customerInDb?.bhp;
+        const bhPToBeUpdated = (
+          Number(existingBhpOfCustomer) + Number(totalBhpEarned)
+        ).toFixed(2);
+        const updateCustomerBhp = await ShopkeeperModel.findOneAndUpdate(
+          { email: sellsInfo?.customerEmail },
+          { bhp: bhPToBeUpdated },
+          { session, new: true },
+        );
+        if (!updateCustomerBhp) {
+          throw new AppError(
+            httpStatus.BAD_REQUEST,
+            'Failed to update customer bhp',
+          );
+        }
+      }
+
+      await session.commitTransaction();
+      await session.endSession();
+
+      if (result.length < 1) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Failed to sell the product ',
+        );
+      }
+
+      return result[0];
+    } catch (err: any) {
+      await session.abortTransaction();
+      await session.endSession();
+      throw new Error(err);
     }
+  } else {
+    // this block will execute if customer is not registered
+    let result;
+    const session = await mongoose.startSession();
 
-    await session.commitTransaction();
-    await session.endSession();
+    try {
+      session.startTransaction();
 
-    if (result.length < 1) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to sell the product ');
+      //transaction - 1 -> create customer
+      const customerInfo = {
+        name: sellsInfo?.customerName,
+        email: sellsInfo?.customerEmail,
+        password: sellsInfo?.customerPassword,
+        role: 'customer',
+        bhp: (Number(sellsInfo?.totalBill) * 0.1).toFixed(2),
+        profileImage: '',
+      };
+      const customer = await ShopkeeperModel.create([customerInfo], {
+        session,
+      });
+
+      // transaction - 2 -> create sell
+      result = await SellModel.create([sellsInfo], { session });
+
+      // transaction - 3 -> reduce quantity in product collection
+      const reduceQuantityInProductCollection =
+        await ProductModel.findByIdAndUpdate(
+          { _id: sellsInfo.productID },
+          { $inc: { quantity: -sellsInfo.quantityToBeSold } },
+          { session, new: true },
+        );
+
+      if (!reduceQuantityInProductCollection) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Failed to sell the product ',
+        );
+      }
+
+      await session.commitTransaction();
+      await session.endSession();
+
+      if (result.length < 1) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Failed to sell the product ',
+        );
+      }
+
+      return result[0];
+    } catch (err: any) {
+      await session.abortTransaction();
+      await session.endSession();
+      throw new Error(err);
     }
-
-    return result[0];
-  } catch (err: any) {
-    await session.abortTransaction();
-    await session.endSession();
-    throw new Error(err);
   }
 };
 

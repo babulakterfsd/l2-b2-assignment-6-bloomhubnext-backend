@@ -43,6 +43,18 @@ export const sellSchema = z.object({
     invalid_type_error: ' must be string',
     required_error: ' is required',
   }),
+  customerName: z
+    .string({
+      invalid_type_error: ' must be string',
+      required_error: ' is required',
+    })
+    .optional(),
+  customerPassword: z
+    .string({
+      invalid_type_error: ' must be string',
+      required_error: ' is required',
+    })
+    .optional(),
   sellerEmail: z.string({
     invalid_type_error: ' must be string',
     required_error: ' is required',

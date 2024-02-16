@@ -11,6 +11,8 @@ export type TSell = {
   quantityToBeSold: number;
   totalBill: number;
   customerEmail: string;
+  customerName?: string;
+  customerPassword?: string;
   sellerEmail: string;
   dateOfSell: string;
 };
