@@ -19,6 +19,17 @@ const createSellInDB = async (sellsInfo: TSell) => {
     );
   }
 
+  const customer = await ShopkeeperModel.findOne({
+    email: sellsInfo?.customerEmail,
+  });
+
+  if (!customer) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Customer not found with the given email',
+    );
+  }
+
   const productToBeSold = await ProductModel.findById({
     _id: sellsInfo.productID,
   });
