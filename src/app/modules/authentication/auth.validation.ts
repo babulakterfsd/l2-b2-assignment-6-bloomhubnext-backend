@@ -63,3 +63,10 @@ export const updateProfileSchema = z.object({
     })
     .optional(),
 });
+
+export const customeExistanceCheckingSchema = z.object({
+  email: z.string({
+    invalid_type_error: ' must be string',
+    required_error: ' is required',
+  }),
+});

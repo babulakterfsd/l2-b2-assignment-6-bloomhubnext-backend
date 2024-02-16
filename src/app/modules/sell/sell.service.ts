@@ -2,12 +2,23 @@ import httpStatus from 'http-status';
 import mongoose from 'mongoose';
 import AppError from '../../errors/AppError';
 import { getFormattedDate, getTodaysDate } from '../../utils/dateFormater';
+import { ShopkeeperModel } from '../authentication/auth.model';
 import { ProductModel } from '../product/product.model';
 import { TSell } from './sell.interface';
 import { SellModel } from './sell.model';
 
 //create sell in DB
 const createSellInDB = async (sellsInfo: TSell) => {
+  const seller = await ShopkeeperModel.findOne({
+    email: sellsInfo?.sellerEmail,
+  });
+  if (!seller || seller?.role !== 'seller') {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Something is wrong with seller',
+    );
+  }
+
   const productToBeSold = await ProductModel.findById({
     _id: sellsInfo.productID,
   });
@@ -27,16 +38,17 @@ const createSellInDB = async (sellsInfo: TSell) => {
       'You cannot sell a product in the future!',
     );
   }
+
   let result;
   const session = await mongoose.startSession();
 
   try {
     session.startTransaction();
 
-    // transaction - 1
+    // transaction - 1 -> create sell
     result = await SellModel.create([sellsInfo], { session });
 
-    // transaction - 2
+    // transaction - 2 -> reduce quantity in product collection
     const reduceQuantityInProductCollection =
       await ProductModel.findByIdAndUpdate(
         { _id: sellsInfo.productID },
@@ -46,6 +58,31 @@ const createSellInDB = async (sellsInfo: TSell) => {
 
     if (!reduceQuantityInProductCollection) {
       throw new AppError(httpStatus.BAD_REQUEST, 'Failed to sell the product ');
+    }
+
+    //transaction - 3 -> update customers bhp in shopkeeper collection
+    const customerInDb = await ShopkeeperModel.findOne({
+      email: sellsInfo.customerEmail,
+    });
+    if (!customerInDb) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Customer not found');
+    } else {
+      const totalBhpEarned = (sellsInfo?.totalBill * 0.1).toFixed(2);
+      const existingBhpOfCustomer = customerInDb?.bhp;
+      const bhPToBeUpdated = (
+        Number(existingBhpOfCustomer) + Number(totalBhpEarned)
+      ).toFixed(2);
+      const updateCustomerBhp = await ShopkeeperModel.findOneAndUpdate(
+        { email: sellsInfo?.customerEmail },
+        { bhp: bhPToBeUpdated },
+        { session, new: true },
+      );
+      if (!updateCustomerBhp) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Failed to update customer bhp',
+        );
+      }
     }
 
     await session.commitTransaction();

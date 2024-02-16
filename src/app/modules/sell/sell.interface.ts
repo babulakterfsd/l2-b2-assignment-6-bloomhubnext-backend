@@ -5,8 +5,12 @@ export type TSell = {
   productID: Types.ObjectId;
   productName: string;
   productPrice: number;
+  appliedCoupon: string;
+  discountPercentage: number;
+  discountGiven: number;
   quantityToBeSold: number;
-  buyerName: string;
-  dateOfSell: string;
   totalBill: number;
+  customerEmail: string;
+  sellerEmail: string;
+  dateOfSell: string;
 };

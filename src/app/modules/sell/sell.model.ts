@@ -5,7 +5,6 @@ const sellSchema = new Schema<TSell>(
   {
     productID: {
       type: Schema.Types.ObjectId,
-      ref: 'products',
       required: true,
     },
     productName: {
@@ -16,20 +15,36 @@ const sellSchema = new Schema<TSell>(
       type: Number,
       required: true,
     },
+    appliedCoupon: {
+      type: String,
+      default: '',
+    },
+    discountPercentage: {
+      type: Number,
+      default: 0,
+    },
+    discountGiven: {
+      type: Number,
+      default: 0,
+    },
     quantityToBeSold: {
       type: Number,
       required: true,
     },
-    buyerName: {
+    totalBill: {
+      type: Number,
+      required: true,
+    },
+    customerEmail: {
+      type: String,
+      required: true,
+    },
+    sellerEmail: {
       type: String,
       required: true,
     },
     dateOfSell: {
       type: String,
-      required: true,
-    },
-    totalBill: {
-      type: Number,
       required: true,
     },
   },

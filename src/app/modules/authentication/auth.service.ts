@@ -224,6 +224,17 @@ const updateShopkeeperProfileInDB = async (
   return modifiedResult;
 };
 
+//check if customer ixists with email
+const isCustomerExistsWithEmail = async (email: string) => {
+  const customer = await ShopkeeperModel.findOne({ email });
+
+  if (customer) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
 export const ShopkeeperServices = {
   registerShopkeeperInDB,
   loginShopkeeperInDB,
@@ -231,4 +242,5 @@ export const ShopkeeperServices = {
   getAccessTokenByRefreshToken,
   getShopkeeperFromDbByEmail,
   updateShopkeeperProfileInDB,
+  isCustomerExistsWithEmail,
 };

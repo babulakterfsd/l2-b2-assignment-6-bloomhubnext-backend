@@ -1,7 +1,9 @@
 import express from 'express';
+import auth from '../../middlewares/auth';
 import validateRequest from '../../middlewares/validateRequest';
 import { ShopkeeperControllers } from './auth.controller';
 import {
+  customeExistanceCheckingSchema,
   loginSchema,
   signupSchema,
   updateProfileSchema,
@@ -35,5 +37,11 @@ router.put(
 );
 
 router.get('/get-profile', ShopkeeperControllers.getShopkeeperProfile);
+router.post(
+  '/check-customer-existance',
+  auth('seller'),
+  validateRequest(customeExistanceCheckingSchema),
+  ShopkeeperControllers.isCustomerExistsWithEmail,
+);
 
 export const AuthRoutes = router;

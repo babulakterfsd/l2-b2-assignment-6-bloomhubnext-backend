@@ -116,6 +116,22 @@ const updateShopkeeperProfile = catchAsync(async (req, res) => {
   });
 });
 
+// check if customer exists with email
+const isCustomerExistsWithEmail = catchAsync(async (req, res) => {
+  const { email } = req.body;
+  console.log(req.body);
+  const result = await ShopkeeperServices.isCustomerExistsWithEmail(email);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: result
+      ? 'Customer exists with this email'
+      : 'Customer does not exist with this email',
+    data: result,
+  });
+});
+
 export const ShopkeeperControllers = {
   registerShopkeeper,
   loginShopkeeper,
@@ -123,4 +139,5 @@ export const ShopkeeperControllers = {
   getAccessTokenUsingRefreshToken,
   getShopkeeperProfile,
   updateShopkeeperProfile,
+  isCustomerExistsWithEmail,
 };
