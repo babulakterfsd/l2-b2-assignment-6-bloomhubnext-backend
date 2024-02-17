@@ -23,6 +23,8 @@ router.post(
   ShopkeeperControllers.loginShopkeeper,
 );
 
+router.post('/logout', ShopkeeperControllers.logoutShopkeeper);
+
 router.post('/verify-token', ShopkeeperControllers.verifyToken);
 
 router.post(

@@ -235,6 +235,35 @@ const isCustomerExistsWithEmail = async (email: string) => {
   }
 };
 
+//logout shopkeeper from db
+const logoutShopkeeperInDB = async (token: string) => {
+  if (!token) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Token is required');
+  }
+
+  // checking token is valid or not
+  let decodedShopkeeper: JwtPayload | string;
+
+  try {
+    decodedShopkeeper = jwt.verify(
+      token as string,
+      config.jwt_access_secret as string,
+    ) as JwtPayload;
+  } catch (error) {
+    throw new JsonWebTokenError('Unauthorized Access!');
+  }
+  const { email } = decodedShopkeeper as JwtPayload;
+
+  // checking if the shopkeeper exists
+  const shopkeeper = await ShopkeeperModel.findOne({ email });
+
+  if (!shopkeeper) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Unauthorized Access!');
+  }
+
+  return true;
+};
+
 export const ShopkeeperServices = {
   registerShopkeeperInDB,
   loginShopkeeperInDB,
@@ -243,4 +272,5 @@ export const ShopkeeperServices = {
   getShopkeeperFromDbByEmail,
   updateShopkeeperProfileInDB,
   isCustomerExistsWithEmail,
+  logoutShopkeeperInDB,
 };

@@ -132,6 +132,21 @@ const isCustomerExistsWithEmail = catchAsync(async (req, res) => {
   });
 });
 
+// logout shopkeeper
+const logoutShopkeeper = catchAsync(async (req, res) => {
+  res.clearCookie('refreshfToken', {
+    secure: config.NODE_ENV === 'production',
+    httpOnly: true,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Logged out successfully!',
+    data: null,
+  });
+});
+
 export const ShopkeeperControllers = {
   registerShopkeeper,
   loginShopkeeper,
@@ -140,4 +155,5 @@ export const ShopkeeperControllers = {
   getShopkeeperProfile,
   updateShopkeeperProfile,
   isCustomerExistsWithEmail,
+  logoutShopkeeper,
 };
