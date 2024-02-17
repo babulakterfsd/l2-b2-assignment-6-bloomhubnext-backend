@@ -26,7 +26,11 @@ router.post(
   ProductControllers.createProduct,
 );
 
-router.get('/', auth('manager', 'seller'), ProductControllers.getAllProducts);
+router.get(
+  '/',
+  auth('manager', 'seller', 'customer'),
+  ProductControllers.getAllProducts,
+);
 
 router.delete('/', auth('manager'), ProductControllers.deleteMultipleProducts);
 

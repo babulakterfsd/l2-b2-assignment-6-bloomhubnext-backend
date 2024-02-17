@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.post(
   '/',
-  auth('seller'),
+  auth('seller', 'customer'),
   validateRequest(sellSchema),
   SellControllers.createSell,
 );
