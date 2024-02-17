@@ -226,7 +226,7 @@ const getAllSellsFromDB = async (timeframe: string) => {
 
     const meta = {
       totalSellGenerated,
-      totalRevenue,
+      totalRevenue: totalRevenue.toFixed(2),
       totalItemSold,
     };
 
